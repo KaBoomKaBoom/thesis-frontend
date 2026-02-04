@@ -124,7 +124,54 @@ import { userApi } from '@/lib/api/user'
 const profile = await userApi.getProfile()
 // Returns UserProfileDTO with user information
 ```
+### Update User Profile (`PUT /api/user/profile`)
+**Requires Authentication:** Yes (Bearer token)
 
+**Request DTO:**
+```typescript
+{
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  location: string
+  gradeLevel: string
+  school: string
+  biography: string
+}
+```
+
+**Response:**
+```typescript
+{
+  message: string
+  profile: UserProfileDTO  // Updated profile data
+}
+```
+
+**Usage:** Profile edit functionality at `/profile`
+- Sends updated user data to backend
+- Backend extracts user ID from JWT token
+- Returns updated profile data
+- Shows success/error toast notifications
+- Updates UI with new data
+
+**Example:**
+```typescript
+import { userApi } from '@/lib/api/user'
+
+const response = await userApi.updateProfile({
+  firstName: "John",
+  lastName: "Doe",
+  email: "john@example.com",
+  phoneNumber: "+373 69 123 456",
+  location: "Chisinau, Moldova",
+  gradeLevel: "12",
+  school: "Liceul Teoretic Mihai Eminescu",
+  biography: "Preparing for BAC exams..."
+})
+// Returns { message: "Profile updated successfully", profile: {...} }
+```
 ## �💾 Token Storage
 
 The application stores authentication tokens in `localStorage`:
@@ -255,6 +302,10 @@ The following components have been updated to use the backend API:
 - ✅ Redirects to login if not authenticated
 - ✅ Handles errors with toast notifications
 - ✅ Automatically includes Bearer token in requests
+- ✅ Calls `userApi.updateProfile()` when saving changes
+- ✅ Shows saving state with spinner on Save button
+- ✅ Updates profile display with response data
+- ✅ Provides success/error feedback via toast
 
 ### 4. `app/layout.tsx`
 - ✅ Added `<Toaster />` component for notifications

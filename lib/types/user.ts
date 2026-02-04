@@ -11,3 +11,21 @@ export interface UserProfileDTO {
   school?: string;
   bio?: string;
 }
+
+// User Update DTO for profile updates
+export interface UserToUpdateDTO {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  location: string;
+  gradeLevel: string;
+  school: string;
+  biography: string;
+}
+
+// API response for profile update
+export interface UpdateProfileResponse {
+  message: string;
+  profile: UserProfileDTO;
+}

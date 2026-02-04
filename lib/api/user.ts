@@ -1,5 +1,5 @@
 import { API_BASE_URL, API_ENDPOINTS } from '@/lib/api-config';
-import type { UserProfileDTO } from '@/lib/types/user';
+import type { UserProfileDTO, UserToUpdateDTO, UpdateProfileResponse } from '@/lib/types/user';
 
 class ApiException extends Error {
   status: number;
@@ -67,6 +67,28 @@ export const userApi = {
     });
 
     return handleResponse<UserProfileDTO>(response);
+  },
+
+  /**
+   * Update current user profile (requires authentication)
+   */
+  async updateProfile(data: UserToUpdateDTO): Promise<UpdateProfileResponse> {
+    const token = getAuthToken();
+    
+    if (!token) {
+      throw new ApiException('No authentication token found', 401);
+    }
+
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.user.updateProfile}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    return handleResponse<UpdateProfileResponse>(response);
   },
 };
 

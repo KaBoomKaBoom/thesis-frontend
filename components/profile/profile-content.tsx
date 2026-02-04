@@ -59,6 +59,7 @@ export function ProfileContent() {
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [profile, setProfile] = useState<UserProfile>({
     firstName: "",
     lastName: "",
@@ -126,9 +127,61 @@ export function ProfileContent() {
     }
   }
 
-  const handleSave = () => {
-    setProfile(editedProfile)
-    setIsEditing(false)
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const updateData = {
+        firstName: editedProfile.firstName,
+        lastName: editedProfile.lastName,
+        email: editedProfile.email,
+        phoneNumber: editedProfile.phone,
+        location: editedProfile.location,
+        gradeLevel: editedProfile.gradeLevel,
+        school: editedProfile.school,
+        biography: editedProfile.bio,
+      }
+
+      const response = await userApi.updateProfile(updateData)
+      
+      // Update profile with the response data
+      const updatedProfile: UserProfile = {
+        firstName: response.profile.firstName,
+        lastName: response.profile.lastName,
+        email: response.profile.email,
+        phone: response.profile.phone || "",
+        location: response.profile.location || "",
+        dateOfBirth: response.profile.dateOfBirth || "",
+        role: response.profile.role,
+        gradeLevel: response.profile.gradeLevel || "",
+        school: response.profile.school || "",
+        bio: response.profile.bio || "",
+      }
+      
+      setProfile(updatedProfile)
+      setEditedProfile(updatedProfile)
+      setIsEditing(false)
+      
+      toast({
+        title: "Profile updated",
+        description: response.message || "Your profile has been updated successfully",
+      })
+    } catch (error) {
+      if (error instanceof ApiException) {
+        toast({
+          title: "Update failed",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while updating your profile",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleCancel = () => {
@@ -267,11 +320,20 @@ export function ProfileContent() {
                       </Button>
                     ) : (
                       <div className="flex gap-2">
-                        <Button onClick={handleSave}>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save
+                        <Button onClick={handleSave} disabled={isSaving}>
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Save
+                            </>
+                          )}
                         </Button>
-                        <Button variant="outline" onClick={handleCancel}>
+                        <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
                           <X className="w-4 h-4 mr-2" />
                           Cancel
                         </Button>
