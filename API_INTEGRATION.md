@@ -7,8 +7,10 @@ This project has been successfully connected to the backend API. Below is the co
 ### Files Created
 
 - `lib/api-config.ts` - API configuration and endpoint definitions
-- `lib/types/auth.ts` - TypeScript types matching backend DTOs
+- `lib/types/auth.ts` - TypeScript types matching backend DTOs for authentication
+- `lib/types/user.ts` - TypeScript types matching backend DTOs for user data
 - `lib/api/auth.ts` - Authentication API service functions
+- `lib/api/user.ts` - User API service functions
 - `.env.local.example` - Environment variables template
 
 ### Environment Setup
@@ -87,7 +89,43 @@ All authentication endpoints are implemented and integrated:
 - `GET /api/auth/api-health` - Check API availability
 - `GET /api/auth/db-health` - Check database connection
 
-## 💾 Token Storage
+## � User Profile Endpoints
+
+### Get User Profile (`GET /api/user/profile`)
+**Requires Authentication:** Yes (Bearer token)
+
+**Response DTO:**
+```typescript
+{
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string
+  location?: string
+  dateOfBirth?: string
+  role: string
+  gradeLevel?: string  // Only for students
+  school?: string
+  bio?: string
+}
+```
+
+**Usage:** Profile page at `/profile`
+- Automatically fetches user profile data on page load
+- Extracts user ID from JWT token (handled by backend)
+- Displays loading state while fetching
+- Redirects to login if not authenticated
+- Shows error messages for failed requests
+
+**Example:**
+```typescript
+import { userApi } from '@/lib/api/user'
+
+const profile = await userApi.getProfile()
+// Returns UserProfileDTO with user information
+```
+
+## �💾 Token Storage
 
 The application stores authentication tokens in `localStorage`:
 
@@ -105,6 +143,8 @@ const refreshToken = localStorage.getItem('refreshToken')
 
 Import and use the API service in your components:
 
+### Authentication APIs
+
 ```typescript
 import { authApi, ApiException } from '@/lib/api/auth'
 
@@ -117,6 +157,26 @@ try {
     password: "password123",
     role: "student"
   })
+  // Handle success
+} catch (error) {
+  if (error instanceof ApiException) {
+    // Handle API error
+    console.error(error.message)
+    console.error(error.status)
+    console.error(error.errors) // Field-specific errors
+  }
+}
+```
+
+### User APIs
+
+```typescript
+import { userApi, ApiException } from '@/lib/api/user'
+
+// Get current user profile
+try {
+  const profile = await userApi.getProfile()
+  console.log(profile.firstName, profile.email)
   // Handle success
 } catch (error) {
   if (error instanceof ApiException) {
@@ -187,6 +247,14 @@ The following components have been updated to use the backend API:
 - ✅ Stores tokens if returned
 - ✅ Shows toast notifications
 - ✅ Handles resend functionality (note: backend doesn't have dedicated resend endpoint)
+
+### 4. `components/profile/profile-content.tsx`
+- ✅ Calls `userApi.getProfile()` on component mount
+- ✅ Displays loading state while fetching data
+- ✅ Shows user information from backend
+- ✅ Redirects to login if not authenticated
+- ✅ Handles errors with toast notifications
+- ✅ Automatically includes Bearer token in requests
 
 ### 4. `app/layout.tsx`
 - ✅ Added `<Toaster />` component for notifications

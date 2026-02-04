@@ -9,4 +9,7 @@ export const API_ENDPOINTS = {
     login: '/api/auth/login',
     refresh: '/api/auth/refresh',
   },
+  user: {
+    profile: '/api/user/profile',
+  },
 } as const;
