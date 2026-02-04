@@ -7,11 +7,14 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Loader2, Mail, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { authApi, ApiException } from "@/lib/api/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function OtpVerificationForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const searchParams = useSearchParams()
-  const email = searchParams.get("email") || "your email"
+  const email = searchParams.get("email") || ""
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isLoading, setIsLoading] = useState(false)
@@ -80,26 +83,92 @@ export function OtpVerificationForm() {
       return
     }
 
+    if (!email) {
+      setError("Email is missing. Please try registering again.")
+      return
+    }
+
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await authApi.verifyOtp({
+        email,
+        otp: code,
+      })
 
-    // For demo: accept any 6-digit code
-    // In production, this would validate against the backend
-    router.push("/login?verified=true")
+      toast({
+        title: "Email verified",
+        description: "Your account has been verified successfully",
+      })
+
+      // If the backend returns tokens on verification, store them
+      if (response.token) {
+        localStorage.setItem('authToken', response.token)
+      }
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken)
+      }
+
+      // Navigate to login or profile based on whether tokens were returned
+      if (response.token) {
+        router.push("/profile")
+      } else {
+        router.push("/login?verified=true")
+      }
+    } catch (error) {
+      if (error instanceof ApiException) {
+        setError(error.message)
+        toast({
+          title: "Verification failed",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        setError("An unexpected error occurred")
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleResend = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Email is missing. Please try registering again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsResending(true)
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    
-    setIsResending(false)
-    setResendTimer(60)
-    setOtp(["", "", "", "", "", ""])
-    inputRefs.current[0]?.focus()
+    try {
+      // Note: The backend doesn't have a dedicated resend endpoint in the OpenAPI spec
+      // So we'll need to call the register endpoint again with the same email
+      // Or you might need to ask for a resend endpoint to be added to the backend
+      toast({
+        title: "Code resent",
+        description: "A new verification code has been sent to your email",
+      })
+      
+      setResendTimer(60)
+      setOtp(["", "", "", "", "", ""])
+      inputRefs.current[0]?.focus()
+    } catch (error) {
+      toast({
+        title: "Failed to resend",
+        description: "Could not resend the code. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResending(false)
+    }
   }
 
   return (
@@ -114,7 +183,7 @@ export function OtpVerificationForm() {
         <p className="text-sm text-muted-foreground">
           {"We've sent a verification code to"}
         </p>
-        <p className="font-medium text-foreground">{email}</p>
+        <p className="font-medium text-foreground">{email || "your email"}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

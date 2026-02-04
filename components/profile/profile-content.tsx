@@ -2,7 +2,8 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import {
   User,
   Mail,
@@ -18,6 +19,7 @@ import {
   BookOpen,
   Target,
   TrendingUp,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +37,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { userApi, ApiException } from "@/lib/api/user"
+import { useToast } from "@/hooks/use-toast"
 
 interface UserProfile {
   firstName: string
@@ -51,25 +55,133 @@ interface UserProfile {
 }
 
 export function ProfileContent() {
+  const router = useRouter()
+  const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [profile, setProfile] = useState<UserProfile>({
-    firstName: "Ion",
-    lastName: "Popescu",
-    email: "ion.popescu@email.com",
-    phone: "+373 69 123 456",
-    location: "Chisinau, Moldova",
-    dateOfBirth: "2008-05-15",
-    role: "student",
-    gradeLevel: "12",
-    school: "Liceul Teoretic Mihai Eminescu",
-    bio: "Preparing for BAC exams. Focused on Mathematics and Romanian Language.",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    location: "",
+    dateOfBirth: "",
+    role: "",
+    gradeLevel: "",
+    school: "",
+    bio: "",
   })
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile)
 
-  const handleSave = () => {
-    setProfile(editedProfile)
-    setIsEditing(false)
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    setIsLoading(true)
+    try {
+      const data = await userApi.getProfile()
+      
+      const userProfile: UserProfile = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone || "",
+        location: data.location || "",
+        dateOfBirth: data.dateOfBirth || "",
+        role: data.role,
+        gradeLevel: data.gradeLevel || "",
+        school: data.school || "",
+        bio: data.bio || "",
+      }
+      
+      setProfile(userProfile)
+      setEditedProfile(userProfile)
+    } catch (error) {
+      if (error instanceof ApiException) {
+        if (error.status === 401) {
+          toast({
+            title: "Authentication required",
+            description: "Please log in to view your profile",
+            variant: "destructive",
+          })
+          router.push("/login")
+        } else {
+          toast({
+            title: "Error loading profile",
+            description: error.message,
+            variant: "destructive",
+          })
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const updateData = {
+        firstName: editedProfile.firstName,
+        lastName: editedProfile.lastName,
+        email: editedProfile.email,
+        phoneNumber: editedProfile.phone,
+        location: editedProfile.location,
+        gradeLevel: editedProfile.gradeLevel,
+        school: editedProfile.school,
+        biography: editedProfile.bio,
+      }
+
+      const response = await userApi.updateProfile(updateData)
+      
+      // Update profile with the response data
+      const updatedProfile: UserProfile = {
+        firstName: response.profile.firstName,
+        lastName: response.profile.lastName,
+        email: response.profile.email,
+        phone: response.profile.phone || "",
+        location: response.profile.location || "",
+        dateOfBirth: response.profile.dateOfBirth || "",
+        role: response.profile.role,
+        gradeLevel: response.profile.gradeLevel || "",
+        school: response.profile.school || "",
+        bio: response.profile.bio || "",
+      }
+      
+      setProfile(updatedProfile)
+      setEditedProfile(updatedProfile)
+      setIsEditing(false)
+      
+      toast({
+        title: "Profile updated",
+        description: response.message || "Your profile has been updated successfully",
+      })
+    } catch (error) {
+      if (error instanceof ApiException) {
+        toast({
+          title: "Update failed",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while updating your profile",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleCancel = () => {
@@ -138,7 +250,22 @@ export function ProfileContent() {
     { name: "Math Master", description: "Complete 50 math tests", earned: false },
   ]
 
-  const initials = `${profile.firstName[0]}${profile.lastName[0]}`
+  const initials = profile.firstName && profile.lastName 
+    ? `${profile.firstName[0]}${profile.lastName[0]}`
+    : "?"
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-6xl py-8 px-4">
+        <div className="flex items-center justify-center h-[400px]">
+          <div className="text-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container max-w-6xl py-8 px-4">
@@ -193,11 +320,20 @@ export function ProfileContent() {
                       </Button>
                     ) : (
                       <div className="flex gap-2">
-                        <Button onClick={handleSave}>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save
+                        <Button onClick={handleSave} disabled={isSaving}>
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Save
+                            </>
+                          )}
                         </Button>
-                        <Button variant="outline" onClick={handleCancel}>
+                        <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
                           <X className="w-4 h-4 mr-2" />
                           Cancel
                         </Button>
