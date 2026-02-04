@@ -10,9 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { authApi, ApiException } from "@/lib/api/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function LoginForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -45,11 +48,53 @@ export function LoginForm() {
 
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await authApi.login({
+        email: formData.email,
+        password: formData.password,
+      })
 
-    // Navigate to dashboard/profile after successful login
-    router.push("/profile")
+      // Store tokens in localStorage
+      if (response.token) {
+        localStorage.setItem('authToken', response.token)
+      }
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken)
+      }
+
+      toast({
+        title: "Success",
+        description: "You have been logged in successfully",
+      })
+
+      // Navigate to dashboard/profile after successful login
+      router.push("/profile")
+    } catch (error) {
+      if (error instanceof ApiException) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        })
+        
+        // Handle field-specific errors if available
+        if (error.errors) {
+          const fieldErrors: Record<string, string> = {}
+          Object.entries(error.errors).forEach(([field, messages]) => {
+            fieldErrors[field.toLowerCase()] = messages[0]
+          })
+          setErrors(fieldErrors)
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

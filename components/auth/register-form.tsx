@@ -17,9 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { authApi, ApiException } from "@/lib/api/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function RegisterForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -77,11 +80,48 @@ export function RegisterForm() {
 
     setIsLoading(true)
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    // Navigate to OTP verification
-    router.push(`/verify?email=${encodeURIComponent(formData.email)}`)
+    try {
+      await authApi.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      })
+
+      toast({
+        title: "Registration successful",
+        description: "Please check your email for verification code",
+      })
+
+      // Navigate to OTP verification
+      router.push(`/verify?email=${encodeURIComponent(formData.email)}`)
+    } catch (error) {
+      if (error instanceof ApiException) {
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive",
+        })
+        
+        // Handle field-specific errors if available
+        if (error.errors) {
+          const fieldErrors: Record<string, string> = {}
+          Object.entries(error.errors).forEach(([field, messages]) => {
+            fieldErrors[field.toLowerCase()] = messages[0]
+          })
+          setErrors(fieldErrors)
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
