@@ -50,7 +50,7 @@ export function DashboardHeader({ user }: HeaderProps) {
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
-    { href: "/tests", label: "Tests", icon: BookOpen },
+    { href: "/tests", label: "Take a Test", icon: BookOpen },
     { href: "/profile", label: "Profile", icon: User },
   ]
 
