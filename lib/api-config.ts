@@ -1,4 +1,5 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+export const TEST_BASE_URL = process.env.NEXT_PUBLIC_TEST_API_BASE_URL || 'http://localhost:8070';
 
 export const API_ENDPOINTS = {
   auth: {
@@ -12,5 +13,16 @@ export const API_ENDPOINTS = {
   user: {
     profile: '/api/user/profile',
     updateProfile: '/api/user/profile',
+  },
+  test: {
+    getTests: '/test',
+    generate: '/test/generate',
+    getById: (testId: number | string) => `/test/${testId}`,
+    questionImage: (questionId: number | string) => `/question/${questionId}/image`,
+    answerImage: (answerId: number | string) => `/answer/${answerId}/answer_image`,
+  },
+  testSession: {
+    register: '/api/testSession/testSession',
+    verify: (sessionId: number | string) => `/api/testSession/verifyTest/${sessionId}`,
   },
 } as const;
