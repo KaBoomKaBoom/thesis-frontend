@@ -19,10 +19,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { authApi, ApiException } from "@/lib/api/auth"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 
 export function RegisterForm() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useI18n()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -41,32 +43,32 @@ export function RegisterForm() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required"
+      newErrors.firstName = String(t("auth.validation.firstNameRequired"))
     }
     if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required"
+      newErrors.lastName = String(t("auth.validation.lastNameRequired"))
     }
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = String(t("auth.validation.emailRequired"))
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
+      newErrors.email = String(t("auth.validation.emailInvalid"))
     }
     if (!formData.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = String(t("auth.validation.passwordRequired"))
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
+      newErrors.password = String(t("auth.validation.passwordMin"))
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = String(t("auth.validation.passwordMismatch"))
     }
     if (!formData.role) {
-      newErrors.role = "Please select your role"
+      newErrors.role = String(t("auth.validation.roleRequired"))
     }
     if (formData.role === "student" && !formData.gradeLevel) {
-      newErrors.gradeLevel = "Please select your grade level"
+      newErrors.gradeLevel = String(t("auth.validation.gradeRequired"))
     }
     if (!formData.acceptTerms) {
-      newErrors.acceptTerms = "You must accept the terms and conditions"
+      newErrors.acceptTerms = String(t("auth.validation.termsRequired"))
     }
 
     setErrors(newErrors)
@@ -90,8 +92,8 @@ export function RegisterForm() {
       })
 
       toast({
-        title: "Registration successful",
-        description: "Please check your email for verification code",
+        title: String(t("toasts.registrationSuccess")),
+        description: String(t("toasts.verifyCodeNotice")),
       })
 
       // Navigate to OTP verification
@@ -99,7 +101,7 @@ export function RegisterForm() {
     } catch (error) {
       if (error instanceof ApiException) {
         toast({
-          title: "Registration failed",
+          title: String(t("toasts.registrationFailed")),
           description: error.message,
           variant: "destructive",
         })
@@ -114,8 +116,8 @@ export function RegisterForm() {
         }
       } else {
         toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
+          title: String(t("common.error")),
+          description: String(t("toasts.unexpected")),
           variant: "destructive",
         })
       }
@@ -128,7 +130,7 @@ export function RegisterForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="firstName">{String(t("auth.firstName"))}</Label>
           <Input
             id="firstName"
             placeholder="Ion"
@@ -143,7 +145,7 @@ export function RegisterForm() {
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
+          <Label htmlFor="lastName">{String(t("auth.lastName"))}</Label>
           <Input
             id="lastName"
             placeholder="Popescu"
@@ -160,7 +162,7 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{String(t("auth.email"))}</Label>
         <Input
           id="email"
           type="email"
@@ -175,12 +177,12 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{String(t("auth.password"))}</Label>
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Create a strong password"
+            placeholder={String(t("auth.password"))}
             value={formData.password}
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
@@ -205,11 +207,11 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword">{String(t("auth.confirmPassword"))}</Label>
         <Input
           id="confirmPassword"
           type="password"
-          placeholder="Confirm your password"
+          placeholder={String(t("auth.confirmPassword"))}
           value={formData.confirmPassword}
           onChange={(e) =>
             setFormData({ ...formData, confirmPassword: e.target.value })
@@ -223,7 +225,7 @@ export function RegisterForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>I am a</Label>
+          <Label>{String(t("auth.role"))}</Label>
           <Select
             value={formData.role}
             onValueChange={(value) =>
@@ -231,12 +233,12 @@ export function RegisterForm() {
             }
           >
             <SelectTrigger className={errors.role ? "border-destructive" : ""}>
-              <SelectValue placeholder="Select role" />
+              <SelectValue placeholder={String(t("auth.selectRole"))} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="teacher">Teacher</SelectItem>
-              <SelectItem value="parent">Parent</SelectItem>
+              <SelectItem value="student">{String(t("auth.student"))}</SelectItem>
+              <SelectItem value="teacher">{String(t("auth.teacher"))}</SelectItem>
+              <SelectItem value="parent">{String(t("auth.parent"))}</SelectItem>
             </SelectContent>
           </Select>
           {errors.role && (
@@ -246,7 +248,7 @@ export function RegisterForm() {
 
         {formData.role === "student" && (
           <div className="space-y-2">
-            <Label>Grade Level</Label>
+            <Label>{String(t("auth.gradeLevel"))}</Label>
             <Select
               value={formData.gradeLevel}
               onValueChange={(value) =>
@@ -256,13 +258,13 @@ export function RegisterForm() {
               <SelectTrigger
                 className={errors.gradeLevel ? "border-destructive" : ""}
               >
-                <SelectValue placeholder="Select grade" />
+                <SelectValue placeholder={String(t("auth.selectGrade"))} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="9">9th Grade</SelectItem>
-                <SelectItem value="10">10th Grade</SelectItem>
-                <SelectItem value="11">11th Grade</SelectItem>
-                <SelectItem value="12">12th Grade (BAC)</SelectItem>
+                <SelectItem value="9">{String(t("auth.grade9"))}</SelectItem>
+                <SelectItem value="10">{String(t("auth.grade10"))}</SelectItem>
+                <SelectItem value="11">{String(t("auth.grade11"))}</SelectItem>
+                <SelectItem value="12">{String(t("auth.grade12"))}</SelectItem>
               </SelectContent>
             </Select>
             {errors.gradeLevel && (
@@ -283,13 +285,13 @@ export function RegisterForm() {
         />
         <div className="space-y-1">
           <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
-            I agree to the{" "}
+            {String(t("auth.agreeTo"))}{" "}
             <Link href="/terms" className="text-primary hover:underline">
-              Terms of Service
+              {String(t("auth.terms"))}
             </Link>{" "}
-            and{" "}
+            {String(t("auth.and"))}{" "}
             <Link href="/privacy" className="text-primary hover:underline">
-              Privacy Policy
+              {String(t("auth.privacy"))}
             </Link>
           </Label>
           {errors.acceptTerms && (
@@ -302,10 +304,10 @@ export function RegisterForm() {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating account...
+            {String(t("auth.creatingAccount"))}
           </>
         ) : (
-          "Create Account"
+          String(t("auth.createAccount"))
         )}
       </Button>
 
@@ -315,7 +317,7 @@ export function RegisterForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            {String(t("auth.continueWith"))}
           </span>
         </div>
       </div>
@@ -351,9 +353,9 @@ export function RegisterForm() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {String(t("auth.hasAccount"))}{" "}
         <Link href="/login" className="text-primary font-medium hover:underline">
-          Sign in
+          {String(t("auth.signInLink"))}
         </Link>
       </p>
     </form>

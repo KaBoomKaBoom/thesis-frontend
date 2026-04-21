@@ -17,6 +17,7 @@ import type {
   UserDashboardDTO,
 } from "@/lib/types/user"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 import {
   ChartContainer,
   ChartTooltip,
@@ -69,10 +70,16 @@ function AnalyticsList({
   title,
   items,
   badgeVariant,
+  noDataLabel,
+  questionLabel,
+  correctLabel,
 }: {
   title: string
   items: DashboardQuestionAnalyticsDTO[]
   badgeVariant: "default" | "destructive"
+  noDataLabel: string
+  questionLabel: string
+  correctLabel: string
 }) {
   return (
     <Card>
@@ -81,16 +88,16 @@ function AnalyticsList({
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data available.</p>
+          <p className="text-sm text-muted-foreground">{noDataLabel}</p>
         ) : (
           <div className="space-y-4">
             {items.map((item) => (
               <div key={item.questionId} className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium text-foreground">Question #{item.questionId}</p>
+                    <p className="font-medium text-foreground">{questionLabel} #{item.questionId}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.correctAnswers}/{item.attempts} correct
+                      {item.correctAnswers}/{item.attempts} {correctLabel}
                     </p>
                   </div>
                   <Badge variant={badgeVariant}>{item.accuracyPercentage}%</Badge>
@@ -108,6 +115,7 @@ function AnalyticsList({
 export function DashboardContent() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useI18n()
 
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<UserDashboardDTO | null>(null)
@@ -121,8 +129,8 @@ export function DashboardContent() {
       } catch (error) {
         if (error instanceof ApiException && error.status === 401) {
           toast({
-            title: "Authentication required",
-            description: "Please log in to view your dashboard",
+            title: String(t("toasts.authRequired")),
+            description: String(t("toasts.loginToDashboard")),
             variant: "destructive",
           })
           router.push("/login")
@@ -130,8 +138,8 @@ export function DashboardContent() {
         }
 
         toast({
-          title: "Could not load dashboard",
-          description: error instanceof Error ? error.message : "Failed to load dashboard data",
+          title: String(t("toasts.couldNotLoadDashboard")),
+          description: error instanceof Error ? error.message : String(t("toasts.failedLoadDashboard")),
           variant: "destructive",
         })
       } finally {
@@ -140,7 +148,7 @@ export function DashboardContent() {
     }
 
     fetchDashboard()
-  }, [router, toast])
+  }, [router, toast, t])
 
   const trendChartData = useMemo(() => {
     if (!dashboardData) return []
@@ -158,51 +166,51 @@ export function DashboardContent() {
 
     return [
       {
-        label: "Total Sessions",
+        label: String(t("dashboard.totalSessions")),
         value: dashboardData.stats.totalSessions,
-        helper: `${dashboardData.stats.completedSessions} completed`,
+        helper: `${dashboardData.stats.completedSessions} ${String(t("dashboard.completed"))}`,
         icon: BarChart3,
       },
       {
-        label: "Average Score",
+        label: String(t("dashboard.averageScore")),
         value: `${dashboardData.stats.averageScorePercentage}%`,
-        helper: "Across all sessions",
+        helper: String(t("dashboard.acrossAll")),
         icon: Target,
       },
       {
-        label: "Best Score",
+        label: String(t("dashboard.bestScore")),
         value: `${dashboardData.stats.bestScorePercentage}%`,
-        helper: "Highest recorded",
+        helper: String(t("dashboard.highestRecorded")),
         icon: Trophy,
       },
       {
-        label: "Last Result",
+        label: String(t("dashboard.lastResult")),
         value: dashboardData.stats.lastSessionResultLabel,
         helper: formatDateTime(dashboardData.stats.lastSessionTakenAt),
         icon: CheckCircle2,
       },
     ]
-  }, [dashboardData])
+  }, [dashboardData, t])
 
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
       <main className="container max-w-6xl py-8 px-4 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Your learning statistics and recent activity.</p>
+          <h1 className="text-2xl font-bold text-foreground">{String(t("dashboard.title"))}</h1>
+          <p className="text-sm text-muted-foreground">{String(t("dashboard.subtitle"))}</p>
         </div>
 
         {isLoading ? (
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+              <p className="text-sm text-muted-foreground">{String(t("dashboard.loading"))}</p>
             </CardContent>
           </Card>
         ) : !dashboardData ? (
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Dashboard data is not available.</p>
+              <p className="text-sm text-muted-foreground">{String(t("dashboard.noData"))}</p>
             </CardContent>
           </Card>
         ) : (
@@ -226,11 +234,11 @@ export function DashboardContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Recent Sessions</CardTitle>
+                <CardTitle>{String(t("dashboard.recentSessions"))}</CardTitle>
               </CardHeader>
               <CardContent>
                 {dashboardData.recentSessions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No sessions yet.</p>
+                  <p className="text-sm text-muted-foreground">{String(t("dashboard.noSessions"))}</p>
                 ) : (
                   <div className="space-y-3">
                     {dashboardData.recentSessions.map((session: DashboardRecentSessionDTO) => (
@@ -254,7 +262,7 @@ export function DashboardContent() {
                           </div>
                           <Progress value={session.scorePercentage} className="w-24 h-2" />
                           <Button asChild variant="outline" size="sm">
-                            <Link href={`/profile/activity/${session.sessionId}`}>Details</Link>
+                            <Link href={`/profile/activity/${session.sessionId}`}>{String(t("common.details"))}</Link>
                           </Button>
                         </div>
                       </div>
@@ -266,11 +274,11 @@ export function DashboardContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Score Trend</CardTitle>
+                <CardTitle>{String(t("dashboard.scoreTrend"))}</CardTitle>
               </CardHeader>
               <CardContent>
                 {trendChartData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No score trend data available.</p>
+                  <p className="text-sm text-muted-foreground">{String(t("dashboard.noScoreTrend"))}</p>
                 ) : (
                   <ChartContainer config={scoreTrendConfig} className="h-[280px] w-full">
                     <LineChart data={trendChartData}>
@@ -284,15 +292,15 @@ export function DashboardContent() {
                             formatter={(value, _name, item) => (
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">Date:</span>
+                                  <span className="text-muted-foreground">{String(t("dashboard.date"))}</span>
                                   <span className="font-medium">{item.payload.fullDate}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">Sessions:</span>
+                                  <span className="text-muted-foreground">{String(t("dashboard.sessions"))}</span>
                                   <span className="font-medium">{item.payload.sessionsCount}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">Score:</span>
+                                  <span className="text-muted-foreground">{String(t("dashboard.score"))}</span>
                                   <span className="font-medium">{value}%</span>
                                 </div>
                               </div>
@@ -326,14 +334,20 @@ export function DashboardContent() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <AnalyticsList
-                title="Strongest Questions"
+                title={String(t("dashboard.strongest"))}
                 items={dashboardData.topicAnalytics.strongestQuestions}
                 badgeVariant="default"
+                noDataLabel={String(t("dashboard.noTopicData"))}
+                questionLabel={String(t("dashboard.question"))}
+                correctLabel={String(t("dashboard.correct"))}
               />
               <AnalyticsList
-                title="Weakest Questions"
+                title={String(t("dashboard.weakest"))}
                 items={dashboardData.topicAnalytics.weakestQuestions}
                 badgeVariant="destructive"
+                noDataLabel={String(t("dashboard.noTopicData"))}
+                questionLabel={String(t("dashboard.question"))}
+                correctLabel={String(t("dashboard.correct"))}
               />
             </div>
           </>

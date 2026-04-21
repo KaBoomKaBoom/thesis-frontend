@@ -12,10 +12,12 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { authApi, ApiException } from "@/lib/api/auth"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 
 export function LoginForm() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useI18n()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,12 +31,12 @@ export function LoginForm() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = String(t("auth.validation.emailRequired"))
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
+      newErrors.email = String(t("auth.validation.emailInvalid"))
     }
     if (!formData.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = String(t("auth.validation.passwordRequired"))
     }
 
     setErrors(newErrors)
@@ -63,8 +65,8 @@ export function LoginForm() {
       }
 
       toast({
-        title: "Success",
-        description: "You have been logged in successfully",
+        title: String(t("toasts.success")),
+        description: String(t("toasts.loginSuccess")),
       })
 
       // Navigate to dashboard/profile after successful login
@@ -72,7 +74,7 @@ export function LoginForm() {
     } catch (error) {
       if (error instanceof ApiException) {
         toast({
-          title: "Login failed",
+          title: String(t("toasts.loginFailed")),
           description: error.message,
           variant: "destructive",
         })
@@ -87,8 +89,8 @@ export function LoginForm() {
         }
       } else {
         toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
+          title: String(t("common.error")),
+          description: String(t("toasts.unexpected")),
           variant: "destructive",
         })
       }
@@ -100,7 +102,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{String(t("auth.email"))}</Label>
         <Input
           id="email"
           type="email"
@@ -116,19 +118,19 @@ export function LoginForm() {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{String(t("auth.password"))}</Label>
           <Link
             href="/forgot-password"
             className="text-xs text-primary hover:underline"
           >
-            Forgot password?
+            {String(t("auth.forgotPassword"))}
           </Link>
         </div>
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
+            placeholder={String(t("auth.password"))}
             value={formData.password}
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
@@ -161,7 +163,7 @@ export function LoginForm() {
           }
         />
         <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-          Remember me for 30 days
+          {String(t("auth.rememberMe"))}
         </Label>
       </div>
 
@@ -169,10 +171,10 @@ export function LoginForm() {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in...
+            {String(t("auth.signingIn"))}
           </>
         ) : (
-          "Sign In"
+          String(t("auth.signIn"))
         )}
       </Button>
 
@@ -182,7 +184,7 @@ export function LoginForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            {String(t("auth.continueWith"))}
           </span>
         </div>
       </div>
@@ -218,12 +220,12 @@ export function LoginForm() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
-        {"Don't have an account?"}{" "}
+        {String(t("auth.noAccount"))}{" "}
         <Link
           href="/register"
           className="text-primary font-medium hover:underline"
         >
-          Create account
+          {String(t("auth.createAccountLink"))}
         </Link>
       </p>
     </form>

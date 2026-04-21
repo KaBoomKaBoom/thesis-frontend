@@ -17,6 +17,7 @@ import type {
   VerifyTestResponse,
 } from "@/lib/types/test"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 
 interface AnswerOption {
   id: number
@@ -79,6 +80,7 @@ function getAnswerOptions(question: TestQuestionSlot): AnswerOption[] {
 
 export function TestContent() {
   const { toast } = useToast()
+  const { t } = useI18n()
 
   const [type, setType] = useState("math")
   const [language, setLanguage] = useState("ro")
@@ -115,8 +117,8 @@ export function TestContent() {
   const handleLoadTests = async () => {
     if (!type.trim()) {
       toast({
-        title: "Type is required",
-        description: "Enter a test type before loading tests",
+        title: String(t("toasts.typeRequired")),
+        description: String(t("toasts.enterTypeBeforeLoad")),
         variant: "destructive",
       })
       return
@@ -129,13 +131,13 @@ export function TestContent() {
       setAvailableTests(tests)
 
       toast({
-        title: "Tests loaded",
+        title: String(t("toasts.testsLoaded")),
         description: `Found ${tests.length} available test(s)`,
       })
     } catch (error) {
-      const message = error instanceof ApiException ? error.message : "Failed to load tests"
+      const message = error instanceof ApiException ? error.message : String(t("toasts.couldNotLoadTests"))
       toast({
-        title: "Could not load tests",
+        title: String(t("toasts.couldNotLoadTests")),
         description: message,
         variant: "destructive",
       })
@@ -147,8 +149,8 @@ export function TestContent() {
   const handleGenerateTest = async () => {
     if (!type.trim() || !language.trim()) {
       toast({
-        title: "Missing fields",
-        description: "Type and language are required to generate a test",
+        title: String(t("toasts.missingFields")),
+        description: String(t("toasts.typeLanguageRequired")),
         variant: "destructive",
       })
       return
@@ -168,13 +170,13 @@ export function TestContent() {
       })
 
       toast({
-        title: "Test generated",
+        title: String(t("toasts.testGenerated")),
         description: `Test #${generated.test_id} is ready`,
       })
     } catch (error) {
-      const message = error instanceof ApiException ? error.message : "Failed to generate test"
+      const message = error instanceof ApiException ? error.message : String(t("toasts.generationFailed"))
       toast({
-        title: "Generation failed",
+        title: String(t("toasts.generationFailed")),
         description: message,
         variant: "destructive",
       })
@@ -195,9 +197,9 @@ export function TestContent() {
       setCurrentQuestionIndex(0)
       setAnswersByQuestionId({})
     } catch (error) {
-      const message = error instanceof ApiException ? error.message : "Failed to load test details"
+      const message = error instanceof ApiException ? error.message : String(t("toasts.couldNotStartTest"))
       toast({
-        title: "Could not start test",
+        title: String(t("toasts.couldNotStartTest")),
         description: message,
         variant: "destructive",
       })
@@ -223,8 +225,8 @@ export function TestContent() {
 
     if (hasMissingAnswers) {
       toast({
-        title: "Complete all questions",
-        description: "Choose an answer for every question before submitting.",
+        title: String(t("toasts.completeAll")),
+        description: String(t("toasts.chooseEveryAnswer")),
         variant: "destructive",
       })
       return
@@ -247,13 +249,13 @@ export function TestContent() {
       setResult(verifyResponse)
 
       toast({
-        title: "Test verified",
+        title: String(t("toasts.testVerified")),
         description: `Score: ${verifyResponse.scorePercentage}%`,
       })
     } catch (error) {
-      const message = error instanceof ApiException ? error.message : "Failed to submit and verify test"
+      const message = error instanceof ApiException ? error.message : String(t("toasts.submissionFailed"))
       toast({
-        title: "Submission failed",
+        title: String(t("toasts.submissionFailed")),
         description: message,
         variant: "destructive",
       })
@@ -274,15 +276,15 @@ export function TestContent() {
         {!activeTest && !result && (
           <Card>
             <CardHeader>
-              <CardTitle>Take a test</CardTitle>
+              <CardTitle>{String(t("tests.takeTest"))}</CardTitle>
               <CardDescription>
-                Load existing tests by filters or generate a new random test.
+                {String(t("tests.intro"))}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="testType">Type</Label>
+                  <Label htmlFor="testType">{String(t("tests.type"))}</Label>
                   <Input
                     id="testType"
                     value={type}
@@ -292,7 +294,7 @@ export function TestContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="testLanguage">Language</Label>
+                  <Label htmlFor="testLanguage">{String(t("tests.language"))}</Label>
                   <Input
                     id="testLanguage"
                     value={language}
@@ -306,10 +308,10 @@ export function TestContent() {
                     {isLoadingTests ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading...
+                        {String(t("tests.loading"))}
                       </>
                     ) : (
-                      "Load tests"
+                      String(t("tests.loadTests"))
                     )}
                   </Button>
 
@@ -317,12 +319,12 @@ export function TestContent() {
                     {isGeneratingTest ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
+                        {String(t("tests.generating"))}
                       </>
                     ) : (
                       <>
                         <RefreshCw className="mr-2 h-4 w-4" />
-                        Generate test
+                        {String(t("tests.generateTest"))}
                       </>
                     )}
                   </Button>
@@ -331,11 +333,11 @@ export function TestContent() {
 
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Available tests
+                  {String(t("tests.availableTests"))}
                 </h3>
 
                 {availableTests.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No tests loaded yet.</p>
+                  <p className="text-sm text-muted-foreground">{String(t("tests.noTests"))}</p>
                 ) : (
                   <div className="grid gap-3">
                     {availableTests.map((test) => (
@@ -350,7 +352,7 @@ export function TestContent() {
                             <Badge variant="outline">{test.language}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {test.questions.length} question(s)
+                            {test.questions.length} {String(t("tests.questionsCount"))}
                           </p>
                         </div>
 
@@ -358,10 +360,10 @@ export function TestContent() {
                           {isStartingTest ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Loading...
+                              {String(t("tests.loading"))}
                             </>
                           ) : (
-                            "Start test"
+                            String(t("tests.startTest"))
                           )}
                         </Button>
                       </div>
@@ -380,21 +382,21 @@ export function TestContent() {
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle>Test #{activeTest.test_id}</CardTitle>
                   <Badge variant="outline">
-                    Question {currentQuestionIndex + 1} / {sortedQuestions.length}
+                    {String(t("tests.question"))} {currentQuestionIndex + 1} / {sortedQuestions.length}
                   </Badge>
                 </div>
                 <Progress value={progressValue} />
                 <CardDescription>
-                  Answered {answeredCount} of {sortedQuestions.length}
+                  {String(t("tests.answered"))} {answeredCount} / {sortedQuestions.length}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Question image</CardTitle>
+                <CardTitle>{String(t("tests.questionImage"))}</CardTitle>
                 <CardDescription>
-                  Position {currentQuestion.position} · Question ID {currentQuestion.question_id}
+                  {String(t("tests.position"))} {currentQuestion.position} · {String(t("tests.questionId"))} {currentQuestion.question_id}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -410,8 +412,8 @@ export function TestContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Choose one answer</CardTitle>
-                <CardDescription>The selected answer is stored for submission.</CardDescription>
+                <CardTitle>{String(t("tests.chooseAnswer"))}</CardTitle>
+                <CardDescription>{String(t("tests.selectedStored"))}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 {currentAnswerOptions.map((option, index) => {
@@ -429,8 +431,8 @@ export function TestContent() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Option {index + 1}</span>
-                        {isSelected && <Badge>Selected</Badge>}
+                        <span className="text-sm font-medium">{String(t("tests.option"))} {index + 1}</span>
+                        {isSelected && <Badge>{String(t("tests.selected"))}</Badge>}
                       </div>
                       <div className="rounded-md border p-2 bg-muted/30">
                         <img
@@ -451,7 +453,7 @@ export function TestContent() {
                 onClick={() => setCurrentQuestionIndex((previous) => Math.max(previous - 1, 0))}
                 disabled={currentQuestionIndex === 0 || isSubmitting}
               >
-                Previous
+                {String(t("tests.previous"))}
               </Button>
 
               <div className="flex gap-2">
@@ -464,7 +466,7 @@ export function TestContent() {
                     }
                     disabled={isSubmitting}
                   >
-                    Next question
+                    {String(t("tests.next"))}
                   </Button>
                 ) : (
                   <>
@@ -473,15 +475,15 @@ export function TestContent() {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Submitting...
+                            {String(t("tests.submitting"))}
                           </>
                         ) : (
-                          "Finish and verify test"
+                          String(t("tests.finishVerify"))
                         )}
                       </Button>
                     ) : (
                       <p className="text-sm text-muted-foreground self-center">
-                        Select an answer to submit the test.
+                        {String(t("tests.selectToSubmit"))}
                       </p>
                     )}
                   </>
@@ -495,26 +497,26 @@ export function TestContent() {
           <>
             <Card>
               <CardHeader>
-                <CardTitle>Test result</CardTitle>
+                <CardTitle>{String(t("tests.result"))}</CardTitle>
                 <CardDescription>
                   Session ID: {sessionId ?? result.sessionId} · Verified at: {new Date(result.verifiedAt).toLocaleString()}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3 sm:grid-cols-4">
                 <div className="rounded-md border p-3">
-                  <p className="text-xs text-muted-foreground">Score</p>
+                  <p className="text-xs text-muted-foreground">{String(t("tests.score"))}</p>
                   <p className="text-2xl font-bold">{result.scorePercentage}%</p>
                 </div>
                 <div className="rounded-md border p-3">
-                  <p className="text-xs text-muted-foreground">Correct</p>
+                  <p className="text-xs text-muted-foreground">{String(t("tests.correct"))}</p>
                   <p className="text-2xl font-bold">{result.correctAnswers}</p>
                 </div>
                 <div className="rounded-md border p-3">
-                  <p className="text-xs text-muted-foreground">Skipped</p>
+                  <p className="text-xs text-muted-foreground">{String(t("tests.skipped"))}</p>
                   <p className="text-2xl font-bold">{result.skipped}</p>
                 </div>
                 <div className="rounded-md border p-3">
-                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-xs text-muted-foreground">{String(t("tests.total"))}</p>
                   <p className="text-2xl font-bold">{result.totalQuestions}</p>
                 </div>
               </CardContent>
@@ -522,8 +524,8 @@ export function TestContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Per-question status</CardTitle>
-                <CardDescription>Relevant verification details for each question.</CardDescription>
+                <CardTitle>{String(t("tests.perQuestionStatus"))}</CardTitle>
+                <CardDescription>{String(t("tests.verificationDetails"))}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {result.detailedResults
@@ -532,26 +534,26 @@ export function TestContent() {
                   .map((detail) => (
                     <div key={detail.id} className="border rounded-md p-3 flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-medium">Question {detail.position}</p>
+                        <p className="font-medium">{String(t("tests.question"))} {detail.position}</p>
                         <p className="text-sm text-muted-foreground">
-                          Submitted: {detail.submittedAnswerId ?? "Skipped"} · Correct: {detail.correctAnswerId}
+                          {String(t("tests.submitted"))}: {detail.submittedAnswerId ?? String(t("tests.skippedValue"))} · {String(t("tests.correct"))}: {detail.correctAnswerId}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {detail.isCorrect ? (
                           <>
                             <CheckCircle2 className="w-4 h-4 text-accent" />
-                            <span className="text-sm">Correct</span>
+                            <span className="text-sm">{String(t("tests.correct"))}</span>
                           </>
                         ) : detail.submittedAnswerId === null ? (
                           <>
                             <MinusCircle className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">Skipped</span>
+                            <span className="text-sm">{String(t("tests.skipped"))}</span>
                           </>
                         ) : (
                           <>
                             <XCircle className="w-4 h-4 text-destructive" />
-                            <span className="text-sm">Incorrect</span>
+                            <span className="text-sm">{String(t("tests.incorrect"))}</span>
                           </>
                         )}
                       </div>
@@ -570,7 +572,7 @@ export function TestContent() {
                   setAnswersByQuestionId({})
                 }}
               >
-                Take another test
+                {String(t("tests.takeAnother"))}
               </Button>
             </div>
           </>
