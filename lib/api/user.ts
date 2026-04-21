@@ -1,5 +1,10 @@
 import { API_BASE_URL, API_ENDPOINTS } from '@/lib/api-config';
-import type { UserProfileDTO, UserToUpdateDTO, UpdateProfileResponse } from '@/lib/types/user';
+import type {
+  UserDashboardDTO,
+  UserProfileDTO,
+  UserToUpdateDTO,
+  UpdateProfileResponse,
+} from '@/lib/types/user';
 
 class ApiException extends Error {
   status: number;
@@ -89,6 +94,24 @@ export const userApi = {
     });
 
     return handleResponse<UpdateProfileResponse>(response);
+  },
+
+  async getDashboard(): Promise<UserDashboardDTO> {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new ApiException('No authentication token found', 401);
+    }
+
+    const response = await fetch('/api/user/dashboard', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+
+    return handleResponse<UserDashboardDTO>(response);
   },
 };
 
