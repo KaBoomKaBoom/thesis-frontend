@@ -163,15 +163,37 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Question ID</TableHead>
-                      <TableHead>Answer ID</TableHead>
+                      <TableHead>Question</TableHead>
+                      <TableHead>Submitted Answer</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {detail.submittedAnswers.map((item) => (
                       <TableRow key={`${item.questionId}-${item.answerId}`}>
-                        <TableCell>{item.questionId}</TableCell>
-                        <TableCell>{item.answerId}</TableCell>
+                        <TableCell>
+                          <div className="space-y-2 min-w-[220px]">
+                            <p className="text-xs text-muted-foreground">Question #{item.questionId}</p>
+                            <div className="rounded-md border p-2 bg-muted/30">
+                              <img
+                                src={testApi.getQuestionImageUrl(item.questionId)}
+                                alt={`Question ${item.questionId}`}
+                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-2 min-w-[220px]">
+                            <p className="text-xs text-muted-foreground">Answer #{item.answerId}</p>
+                            <div className="rounded-md border p-2 bg-muted/30">
+                              <img
+                                src={testApi.getAnswerImageUrl(item.answerId)}
+                                alt={`Submitted answer ${item.answerId}`}
+                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -200,9 +222,48 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                     {detail.results.map((result) => (
                       <TableRow key={result.position}>
                         <TableCell>{result.position}</TableCell>
-                        <TableCell>{result.questionId}</TableCell>
-                        <TableCell>{result.submittedAnswerId ?? "-"}</TableCell>
-                        <TableCell>{result.correctAnswerId}</TableCell>
+                        <TableCell>
+                          <div className="space-y-2 min-w-[220px]">
+                            <p className="text-xs text-muted-foreground">Question #{result.questionId}</p>
+                            <div className="rounded-md border p-2 bg-muted/30">
+                              <img
+                                src={testApi.getQuestionImageUrl(result.questionId)}
+                                alt={`Question ${result.questionId}`}
+                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {result.submittedAnswerId === null ? (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          ) : (
+                            <div className="space-y-2 min-w-[220px]">
+                              <p className="text-xs text-muted-foreground">
+                                Answer #{result.submittedAnswerId}
+                              </p>
+                              <div className="rounded-md border p-2 bg-muted/30">
+                                <img
+                                  src={testApi.getAnswerImageUrl(result.submittedAnswerId)}
+                                  alt={`Submitted answer ${result.submittedAnswerId}`}
+                                  className="w-full h-auto max-h-[140px] object-contain mx-auto"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-2 min-w-[220px]">
+                            <p className="text-xs text-muted-foreground">Answer #{result.correctAnswerId}</p>
+                            <div className="rounded-md border p-2 bg-muted/30">
+                              <img
+                                src={testApi.getAnswerImageUrl(result.correctAnswerId)}
+                                alt={`Correct answer ${result.correctAnswerId}`}
+                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {result.isCorrect ? (
                             <span className="inline-flex items-center gap-1 text-chart-3 font-medium">
