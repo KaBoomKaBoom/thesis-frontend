@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   GraduationCap,
@@ -10,52 +12,26 @@ import {
   Award,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/components/i18n/i18n-provider"
+import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 
 export default function HomePage() {
-  const features = [
-    {
-      icon: BookOpen,
-      title: "Curriculum Aligned",
-      description:
-        "All tests are aligned with the official Moldovan national curriculum for 9th grade and BAC exams.",
-    },
-    {
-      icon: Target,
-      title: "Instant Feedback",
-      description:
-        "Get detailed explanations for every answer immediately after completing a test.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Progress Tracking",
-      description:
-        "Monitor your improvement over time with personalized analytics and dashboards.",
-    },
-    {
-      icon: Users,
-      title: "Teacher Support",
-      description:
-        "Teachers can create assignments and track student performance with detailed reports.",
-    },
-  ]
+  const { t } = useI18n()
+
+  const features = [BookOpen, Target, TrendingUp, Users].map((icon, index) => ({
+    icon,
+    title: (t("home.features") as { title: string; description: string }[])[index].title,
+    description: (t("home.features") as { title: string; description: string }[])[index].description,
+  }))
 
   const stats = [
-    { value: "10,000+", label: "Students" },
-    { value: "5,000+", label: "Practice Tests" },
-    { value: "50+", label: "Subjects" },
-    { value: "95%", label: "Pass Rate" },
+    { value: "10,000+", label: (t("home.stats") as string[])[0] },
+    { value: "5,000+", label: (t("home.stats") as string[])[1] },
+    { value: "50+", label: (t("home.stats") as string[])[2] },
+    { value: "95%", label: (t("home.stats") as string[])[3] },
   ]
 
-  const subjects = [
-    "Mathematics",
-    "Romanian Language",
-    "History",
-    "English",
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Informatics",
-  ]
+  const subjects = t("home.subjects") as string[]
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,11 +45,12 @@ export default function HomePage() {
             <span className="text-xl font-bold text-foreground">ExamPrep</span>
           </Link>
           <nav className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="ghost">{String(t("home.signIn"))}</Button>
             </Link>
             <Link href="/register">
-              <Button>Get Started</Button>
+              <Button>{String(t("home.getStarted"))}</Button>
             </Link>
           </nav>
         </div>
@@ -84,26 +61,24 @@ export default function HomePage() {
         <div className="container max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Award className="w-4 h-4" />
-            Trusted by students across Moldova
+            {String(t("home.badge"))}
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight mb-6 text-balance">
-            Prepare for success in your national exams
+            {String(t("home.heroTitle"))}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 text-pretty">
-            Join thousands of Moldovan students preparing for BAC and 9th grade
-            graduation exams with our curriculum-aligned practice tests, instant
-            feedback, and personalized progress tracking.
+            {String(t("home.heroSubtitle"))}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">
               <Button size="lg" className="gap-2">
-                Start Preparing Free
+                {String(t("home.startPreparing"))}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link href="/login">
               <Button size="lg" variant="outline">
-                I Have an Account
+                {String(t("home.haveAccount"))}
               </Button>
             </Link>
           </div>
@@ -131,11 +106,10 @@ export default function HomePage() {
         <div className="container max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything you need to succeed
+              {String(t("home.featuresTitle"))}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform provides all the tools and resources you need to prepare
-              effectively for your national examinations.
+              {String(t("home.featuresSubtitle"))}
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
@@ -162,11 +136,10 @@ export default function HomePage() {
         <div className="container max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              All major subjects covered
+              {String(t("home.subjectsTitle"))}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Practice tests and study materials for all subjects included in the
-              9th grade and BAC examinations.
+              {String(t("home.subjectsSubtitle"))}
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
@@ -188,11 +161,10 @@ export default function HomePage() {
         <div className="container max-w-3xl mx-auto text-center">
           <div className="p-8 md:p-12 rounded-2xl bg-primary text-primary-foreground">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Ready to start preparing?
+              {String(t("home.ctaTitle"))}
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-              Create your free account today and join thousands of students who
-              are preparing smarter for their national exams.
+              {String(t("home.ctaSubtitle"))}
             </p>
             <Link href="/register">
               <Button
@@ -200,7 +172,7 @@ export default function HomePage() {
                 variant="secondary"
                 className="gap-2"
               >
-                Create Free Account
+                {String(t("home.ctaButton"))}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -220,20 +192,20 @@ export default function HomePage() {
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link href="/about" className="hover:text-foreground transition-colors">
-                About
+                {String(t("home.footerLinks.about"))}
               </Link>
               <Link href="/contact" className="hover:text-foreground transition-colors">
-                Contact
+                {String(t("home.footerLinks.contact"))}
               </Link>
               <Link href="/privacy" className="hover:text-foreground transition-colors">
-                Privacy
+                {String(t("home.footerLinks.privacy"))}
               </Link>
               <Link href="/terms" className="hover:text-foreground transition-colors">
-                Terms
+                {String(t("home.footerLinks.terms"))}
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              2026 ExamPrep Moldova. All rights reserved.
+              {String(t("home.footerRights"))}
             </p>
           </div>
         </div>

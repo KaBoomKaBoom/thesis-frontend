@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, Loader2, XCircle } from "lucide-react"
 import { testApi, ApiException } from "@/lib/api/test"
 import type { SessionActivityDetail } from "@/lib/types/test"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -53,6 +54,7 @@ function toReadableDateTime(value: string) {
 export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useI18n()
 
   const [isLoading, setIsLoading] = useState(true)
   const [detail, setDetail] = useState<SessionActivityDetail | null>(null)
@@ -75,8 +77,8 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
       } catch (error) {
         if (error instanceof ApiException && error.status === 401) {
           toast({
-            title: "Authentication required",
-            description: "Please log in to view session details",
+            title: String(t("toasts.authRequired")),
+            description: String(t("toasts.loginToSession")),
             variant: "destructive",
           })
           router.push("/login")
@@ -84,8 +86,8 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
         }
 
         toast({
-          title: "Could not load session",
-          description: error instanceof Error ? error.message : "Failed to load session details",
+          title: String(t("toasts.couldNotLoadSession")),
+          description: error instanceof Error ? error.message : String(t("toasts.failedLoadSession")),
           variant: "destructive",
         })
         setDetail(null)
@@ -102,7 +104,7 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
       type="button"
       onClick={() => setPreview({ src, alt, label })}
       className="rounded-md border p-2 bg-muted/30 w-full text-left hover:border-primary/50 transition-colors"
-      aria-label={`Preview ${label}`}
+      aria-label={`${String(t("sessionDetail.imagePreview"))} ${label}`}
     >
       <img
         src={src}
@@ -115,11 +117,11 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
   return (
     <div className="container max-w-6xl py-8 px-4 space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-foreground">Session Details</h1>
+        <h1 className="text-2xl font-bold text-foreground">{String(t("sessionDetail.title"))}</h1>
         <Button asChild variant="outline">
           <Link href="/profile">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Profile
+            {String(t("sessionDetail.back"))}
           </Link>
         </Button>
       </div>
@@ -127,7 +129,7 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
       {!isValidSessionId ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Invalid session ID.</p>
+            <p className="text-sm text-muted-foreground">{String(t("sessionDetail.invalidId"))}</p>
           </CardContent>
         </Card>
       ) : isLoading ? (
@@ -139,44 +141,44 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
       ) : !detail ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Session details are not available.</p>
+            <p className="text-sm text-muted-foreground">{String(t("sessionDetail.unavailable"))}</p>
           </CardContent>
         </Card>
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Summary</CardTitle>
+              <CardTitle>{String(t("sessionDetail.summary"))}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs text-muted-foreground">Session ID</p>
+                  <p className="text-xs text-muted-foreground">{String(t("sessionDetail.sessionId"))}</p>
                   <p className="font-semibold text-foreground">{detail.sessionId}</p>
                 </div>
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs text-muted-foreground">Test ID</p>
+                  <p className="text-xs text-muted-foreground">{String(t("sessionDetail.testId"))}</p>
                   <p className="font-semibold text-foreground">{detail.testId}</p>
                 </div>
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs text-muted-foreground">Result</p>
+                  <p className="text-xs text-muted-foreground">{String(t("sessionDetail.result"))}</p>
                   <p className="font-semibold text-foreground">
                     {detail.correctAnswers}/{detail.totalQuestions}
                   </p>
                 </div>
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs text-muted-foreground">Score</p>
+                  <p className="text-xs text-muted-foreground">{String(t("sessionDetail.score"))}</p>
                   <p className="font-semibold text-foreground">{detail.scorePercentage}%</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Taken at</p>
+                  <p className="text-muted-foreground">{String(t("sessionDetail.takenAt"))}</p>
                   <p className="font-medium text-foreground">{toReadableDateTime(detail.testTakenTime)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Verified at</p>
+                  <p className="text-muted-foreground">{String(t("sessionDetail.verifiedAt"))}</p>
                   <p className="font-medium text-foreground">{toReadableDateTime(detail.verifiedAt)}</p>
                 </div>
               </div>
@@ -185,15 +187,15 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Submitted Answers</CardTitle>
+              <CardTitle>{String(t("sessionDetail.submittedAnswers"))}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-72 overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Question</TableHead>
-                      <TableHead>Submitted Answer</TableHead>
+                      <TableHead>{String(t("sessionDetail.question"))}</TableHead>
+                      <TableHead>{String(t("sessionDetail.submitted"))} {String(t("sessionDetail.answer"))}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -229,7 +231,7 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Per-Question Results</CardTitle>
+              <CardTitle>{String(t("sessionDetail.perQuestion"))}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-96 overflow-auto">
@@ -237,10 +239,10 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>#</TableHead>
-                      <TableHead>Question</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead>Correct</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{String(t("sessionDetail.question"))}</TableHead>
+                      <TableHead>{String(t("sessionDetail.submitted"))}</TableHead>
+                      <TableHead>{String(t("sessionDetail.correct"))}</TableHead>
+                      <TableHead>{String(t("sessionDetail.status"))}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -287,12 +289,12 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                           {result.isCorrect ? (
                             <span className="inline-flex items-center gap-1 text-chart-3 font-medium">
                               <CheckCircle2 className="w-4 h-4" />
-                              Correct
+                              {String(t("sessionDetail.correctStatus"))}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-destructive font-medium">
                               <XCircle className="w-4 h-4" />
-                              Incorrect
+                              {String(t("sessionDetail.incorrectStatus"))}
                             </span>
                           )}
                         </TableCell>
@@ -309,8 +311,8 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
       <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
         <DialogContent className="max-w-5xl">
           <DialogHeader>
-            <DialogTitle>{preview?.label ?? "Image preview"}</DialogTitle>
-            <DialogDescription>Click outside the modal or press Esc to close.</DialogDescription>
+            <DialogTitle>{preview?.label ?? String(t("sessionDetail.imagePreview"))}</DialogTitle>
+            <DialogDescription>{String(t("sessionDetail.closeHint"))}</DialogDescription>
           </DialogHeader>
           {preview && (
             <div className="rounded-md border p-2 bg-muted/30">
