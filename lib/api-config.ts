@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   user: {
     profile: '/api/user/profile',
     updateProfile: '/api/user/profile',
+    dashboard: '/api/user/dashboard',
   },
   test: {
     getTests: '/test',
