@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { useI18n } from "@/components/i18n/i18n-provider"
 
 interface HeaderProps {
   user?: {
@@ -35,6 +37,7 @@ interface HeaderProps {
 
 export function DashboardHeader({ user }: HeaderProps) {
   const router = useRouter()
+  const { t } = useI18n()
   
   const defaultUser = user || {
     firstName: "Ion",
@@ -49,9 +52,9 @@ export function DashboardHeader({ user }: HeaderProps) {
   }
 
   const navLinks = [
-    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
-    { href: "/tests", label: "Take a Test", icon: BookOpen },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/dashboard", label: String(t("header.dashboard")), icon: BarChart3 },
+    { href: "/tests", label: String(t("header.takeTest")), icon: BookOpen },
+    { href: "/profile", label: String(t("header.profile")), icon: User },
   ]
 
   return (
@@ -81,6 +84,8 @@ export function DashboardHeader({ user }: HeaderProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="w-5 h-5" />
@@ -119,13 +124,13 @@ export function DashboardHeader({ user }: HeaderProps) {
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  Profile
+                  {String(t("header.profile"))}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  {String(t("header.settings"))}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -134,7 +139,7 @@ export function DashboardHeader({ user }: HeaderProps) {
                 className="cursor-pointer text-destructive focus:text-destructive"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out
+                {String(t("header.logout"))}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -162,7 +167,7 @@ export function DashboardHeader({ user }: HeaderProps) {
                   onClick={handleLogout}
                 >
                   <LogOut className="w-4 h-4" />
-                  Log out
+                  {String(t("header.logout"))}
                 </Button>
               </nav>
             </SheetContent>

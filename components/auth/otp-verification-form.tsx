@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authApi, ApiException } from "@/lib/api/auth"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/components/i18n/i18n-provider"
 
 export function OtpVerificationForm() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const email = searchParams.get("email") || ""
 
@@ -79,12 +81,12 @@ export function OtpVerificationForm() {
 
     const code = otp.join("")
     if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code")
+      setError(String(t("auth.validation.otpIncomplete")))
       return
     }
 
     if (!email) {
-      setError("Email is missing. Please try registering again.")
+      setError(String(t("auth.validation.emailMissing")))
       return
     }
 
@@ -97,8 +99,8 @@ export function OtpVerificationForm() {
       })
 
       toast({
-        title: "Email verified",
-        description: "Your account has been verified successfully",
+        title: String(t("toasts.emailVerified")),
+        description: String(t("toasts.accountVerified")),
       })
 
       // If the backend returns tokens on verification, store them
@@ -119,15 +121,15 @@ export function OtpVerificationForm() {
       if (error instanceof ApiException) {
         setError(error.message)
         toast({
-          title: "Verification failed",
+          title: String(t("toasts.verificationFailed")),
           description: error.message,
           variant: "destructive",
         })
       } else {
-        setError("An unexpected error occurred")
+        setError(String(t("toasts.unexpected")))
         toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
+          title: String(t("common.error")),
+          description: String(t("toasts.unexpected")),
           variant: "destructive",
         })
       }
@@ -139,8 +141,8 @@ export function OtpVerificationForm() {
   const handleResend = async () => {
     if (!email) {
       toast({
-        title: "Error",
-        description: "Email is missing. Please try registering again.",
+        title: String(t("common.error")),
+        description: String(t("auth.validation.emailMissing")),
         variant: "destructive",
       })
       return
@@ -153,8 +155,8 @@ export function OtpVerificationForm() {
       // So we'll need to call the register endpoint again with the same email
       // Or you might need to ask for a resend endpoint to be added to the backend
       toast({
-        title: "Code resent",
-        description: "A new verification code has been sent to your email",
+        title: String(t("toasts.codeResent")),
+        description: String(t("toasts.newCodeSent")),
       })
       
       setResendTimer(60)
@@ -162,8 +164,8 @@ export function OtpVerificationForm() {
       inputRefs.current[0]?.focus()
     } catch (error) {
       toast({
-        title: "Failed to resend",
-        description: "Could not resend the code. Please try again.",
+        title: String(t("toasts.failedResend")),
+        description: String(t("toasts.couldNotResend")),
         variant: "destructive",
       })
     } finally {
@@ -181,9 +183,9 @@ export function OtpVerificationForm() {
 
       <div className="text-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          {"We've sent a verification code to"}
+          {String(t("auth.codeSentTo"))}
         </p>
-        <p className="font-medium text-foreground">{email || "your email"}</p>
+        <p className="font-medium text-foreground">{email || String(t("auth.yourEmail"))}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -214,22 +216,22 @@ export function OtpVerificationForm() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Verifying...
+              {String(t("auth.verifying"))}
             </>
           ) : (
-            "Verify Email"
+            String(t("auth.verifyEmail"))
           )}
         </Button>
       </form>
 
       <div className="text-center space-y-4">
         <p className="text-sm text-muted-foreground">
-          {"Didn't receive the code?"}
+          {String(t("auth.noCode"))}
         </p>
         
         {resendTimer > 0 ? (
           <p className="text-sm text-muted-foreground">
-            Resend code in <span className="font-medium text-foreground">{resendTimer}s</span>
+            {String(t("auth.resendIn"))} <span className="font-medium text-foreground">{resendTimer}s</span>
           </p>
         ) : (
           <Button
@@ -241,12 +243,12 @@ export function OtpVerificationForm() {
             {isResending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
+                {String(t("auth.sending"))}
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Resend Code
+                {String(t("auth.resendCode"))}
               </>
             )}
           </Button>
@@ -254,7 +256,7 @@ export function OtpVerificationForm() {
       </div>
 
       <p className="text-xs text-center text-muted-foreground">
-        Make sure to check your spam folder if you {"don't"} see the email in your inbox.
+        {String(t("auth.spamHint"))}
       </p>
     </div>
   )

@@ -3,14 +3,18 @@
 import React from "react"
 
 import { BookOpen, GraduationCap, Target, TrendingUp } from "lucide-react"
+import { useI18n } from "@/components/i18n/i18n-provider"
+import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 
 interface AuthLayoutProps {
   children: React.ReactNode
-  title: string
-  subtitle: string
+  titleKey: string
+  subtitleKey: string
 }
 
-export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+export function AuthLayout({ children, titleKey, subtitleKey }: AuthLayoutProps) {
+  const { t } = useI18n()
+
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
@@ -30,44 +34,48 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
         <div className="relative z-10 space-y-8">
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight text-balance">
-            Prepare for success in your national exams
+            {String(t("auth.brandTitle"))}
           </h1>
           <p className="text-primary-foreground/80 text-lg">
-            Join thousands of Moldovan students preparing for BAC and 9th grade graduation exams with our curriculum-aligned practice tests.
+            {String(t("auth.brandSubtitle"))}
           </p>
 
           <div className="grid grid-cols-2 gap-4 pt-4">
             <FeatureCard
               icon={<BookOpen className="w-5 h-5" />}
-              title="Curriculum Aligned"
-              description="Tests based on official Moldovan curriculum"
+              title={String(t("auth.feature1Title"))}
+              description={String(t("auth.feature1Desc"))}
             />
             <FeatureCard
               icon={<Target className="w-5 h-5" />}
-              title="Instant Feedback"
-              description="Get explanations for every answer"
+              title={String(t("auth.feature2Title"))}
+              description={String(t("auth.feature2Desc"))}
             />
             <FeatureCard
               icon={<TrendingUp className="w-5 h-5" />}
-              title="Track Progress"
-              description="Monitor your improvement over time"
+              title={String(t("auth.feature3Title"))}
+              description={String(t("auth.feature3Desc"))}
             />
             <FeatureCard
               icon={<GraduationCap className="w-5 h-5" />}
-              title="Mock Exams"
-              description="Practice under real exam conditions"
+              title={String(t("auth.feature4Title"))}
+              description={String(t("auth.feature4Desc"))}
             />
           </div>
         </div>
 
         <div className="relative z-10 text-primary-foreground/60 text-sm">
-          Trusted by students across Moldova
+          {String(t("auth.trusted"))}
         </div>
       </div>
 
       {/* Right side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
+          <div className="flex justify-end">
+            <LanguageSwitcher />
+          </div>
+
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -77,8 +85,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           </div>
 
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-foreground">{title}</h2>
-            <p className="mt-2 text-muted-foreground">{subtitle}</p>
+            <h2 className="text-3xl font-bold text-foreground">{String(t(titleKey))}</h2>
+            <p className="mt-2 text-muted-foreground">{String(t(subtitleKey))}</p>
           </div>
 
           {children}

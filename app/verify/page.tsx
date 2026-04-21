@@ -9,8 +9,8 @@ function OtpVerificationContent() {
 export default function VerifyPage() {
   return (
     <AuthLayout
-      title="Verify your email"
-      subtitle="Enter the code we sent to your email"
+      titleKey="auth.verifyTitle"
+      subtitleKey="auth.verifySubtitle"
     >
       <Suspense fallback={<div className="text-center text-muted-foreground">Loading...</div>}>
         <OtpVerificationContent />
