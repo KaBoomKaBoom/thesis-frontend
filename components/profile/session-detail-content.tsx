@@ -17,9 +17,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface SessionDetailContentProps {
   sessionId: string
+}
+
+interface ImagePreviewState {
+  src: string
+  alt: string
+  label: string
 }
 
 function toReadableDateTime(value: string) {
@@ -43,6 +56,7 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
 
   const [isLoading, setIsLoading] = useState(true)
   const [detail, setDetail] = useState<SessionActivityDetail | null>(null)
+  const [preview, setPreview] = useState<ImagePreviewState | null>(null)
 
   const parsedSessionId = useMemo(() => Number(sessionId), [sessionId])
   const isValidSessionId = Number.isFinite(parsedSessionId) && parsedSessionId > 0
@@ -82,6 +96,21 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
 
     loadSession()
   }, [isValidSessionId, parsedSessionId, router, toast])
+
+  const renderPreviewableImage = ({ src, alt, label }: ImagePreviewState) => (
+    <button
+      type="button"
+      onClick={() => setPreview({ src, alt, label })}
+      className="rounded-md border p-2 bg-muted/30 w-full text-left hover:border-primary/50 transition-colors"
+      aria-label={`Preview ${label}`}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-auto max-h-[140px] object-contain mx-auto"
+      />
+    </button>
+  )
 
   return (
     <div className="container max-w-6xl py-8 px-4 space-y-6">
@@ -173,25 +202,21 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                         <TableCell>
                           <div className="space-y-2 min-w-[220px]">
                             <p className="text-xs text-muted-foreground">Question #{item.questionId}</p>
-                            <div className="rounded-md border p-2 bg-muted/30">
-                              <img
-                                src={testApi.getQuestionImageUrl(item.questionId)}
-                                alt={`Question ${item.questionId}`}
-                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
-                              />
-                            </div>
+                            {renderPreviewableImage({
+                              src: testApi.getQuestionImageUrl(item.questionId),
+                              alt: `Question ${item.questionId}`,
+                              label: `Question #${item.questionId}`,
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-2 min-w-[220px]">
                             <p className="text-xs text-muted-foreground">Answer #{item.answerId}</p>
-                            <div className="rounded-md border p-2 bg-muted/30">
-                              <img
-                                src={testApi.getAnswerImageUrl(item.answerId)}
-                                alt={`Submitted answer ${item.answerId}`}
-                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
-                              />
-                            </div>
+                            {renderPreviewableImage({
+                              src: testApi.getAnswerImageUrl(item.answerId),
+                              alt: `Submitted answer ${item.answerId}`,
+                              label: `Submitted answer #${item.answerId}`,
+                            })}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -225,13 +250,11 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                         <TableCell>
                           <div className="space-y-2 min-w-[220px]">
                             <p className="text-xs text-muted-foreground">Question #{result.questionId}</p>
-                            <div className="rounded-md border p-2 bg-muted/30">
-                              <img
-                                src={testApi.getQuestionImageUrl(result.questionId)}
-                                alt={`Question ${result.questionId}`}
-                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
-                              />
-                            </div>
+                            {renderPreviewableImage({
+                              src: testApi.getQuestionImageUrl(result.questionId),
+                              alt: `Question ${result.questionId}`,
+                              label: `Question #${result.questionId}`,
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -242,26 +265,22 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
                               <p className="text-xs text-muted-foreground">
                                 Answer #{result.submittedAnswerId}
                               </p>
-                              <div className="rounded-md border p-2 bg-muted/30">
-                                <img
-                                  src={testApi.getAnswerImageUrl(result.submittedAnswerId)}
-                                  alt={`Submitted answer ${result.submittedAnswerId}`}
-                                  className="w-full h-auto max-h-[140px] object-contain mx-auto"
-                                />
-                              </div>
+                              {renderPreviewableImage({
+                                src: testApi.getAnswerImageUrl(result.submittedAnswerId),
+                                alt: `Submitted answer ${result.submittedAnswerId}`,
+                                label: `Submitted answer #${result.submittedAnswerId}`,
+                              })}
                             </div>
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="space-y-2 min-w-[220px]">
                             <p className="text-xs text-muted-foreground">Answer #{result.correctAnswerId}</p>
-                            <div className="rounded-md border p-2 bg-muted/30">
-                              <img
-                                src={testApi.getAnswerImageUrl(result.correctAnswerId)}
-                                alt={`Correct answer ${result.correctAnswerId}`}
-                                className="w-full h-auto max-h-[140px] object-contain mx-auto"
-                              />
-                            </div>
+                            {renderPreviewableImage({
+                              src: testApi.getAnswerImageUrl(result.correctAnswerId),
+                              alt: `Correct answer ${result.correctAnswerId}`,
+                              label: `Correct answer #${result.correctAnswerId}`,
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -286,6 +305,24 @@ export function SessionDetailContent({ sessionId }: SessionDetailContentProps) {
           </Card>
         </>
       )}
+
+      <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>{preview?.label ?? "Image preview"}</DialogTitle>
+            <DialogDescription>Click outside the modal or press Esc to close.</DialogDescription>
+          </DialogHeader>
+          {preview && (
+            <div className="rounded-md border p-2 bg-muted/30">
+              <img
+                src={preview.src}
+                alt={preview.alt}
+                className="w-full h-auto max-h-[75vh] object-contain mx-auto"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
