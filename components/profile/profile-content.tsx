@@ -3,6 +3,7 @@
 import React from "react"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   User,
@@ -20,6 +21,7 @@ import {
   Target,
   TrendingUp,
   Loader2,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,6 +40,8 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { userApi, ApiException } from "@/lib/api/user"
+import { testApi } from "@/lib/api/test"
+import type { SessionActivitySummary } from "@/lib/types/test"
 import { useToast } from "@/hooks/use-toast"
 
 interface UserProfile {
@@ -60,6 +64,8 @@ export function ProfileContent() {
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false)
+  const [sessions, setSessions] = useState<SessionActivitySummary[]>([])
   const [profile, setProfile] = useState<UserProfile>({
     firstName: "",
     lastName: "",
@@ -77,7 +83,39 @@ export function ProfileContent() {
 
   useEffect(() => {
     fetchProfile()
+    fetchActivitySessions()
   }, [])
+
+  const toReadableDateTime = (value: string) => {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) {
+      return "-"
+    }
+
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  const getErrorStatus = (error: unknown) => {
+    if (typeof error === "object" && error !== null && "status" in error) {
+      return Number((error as { status: number }).status)
+    }
+
+    return null
+  }
+
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error && error.message) {
+      return error.message
+    }
+
+    return fallback
+  }
 
   const fetchProfile = async () => {
     setIsLoading(true)
@@ -124,6 +162,35 @@ export function ProfileContent() {
       }
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const fetchActivitySessions = async () => {
+    setIsLoadingSessions(true)
+    try {
+      const response = await testApi.getActivitySessions()
+      setSessions(response)
+    } catch (error) {
+      const errorStatus = getErrorStatus(error)
+
+      if (errorStatus === 401) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view your session activity",
+          variant: "destructive",
+        })
+        router.push("/login")
+      } else {
+        toast({
+          title: "Could not load activity",
+          description: getErrorMessage(error, "Failed to load your sessions"),
+          variant: "destructive",
+        })
+      }
+
+      setSessions([])
+    } finally {
+      setIsLoadingSessions(false)
     }
   }
 
@@ -213,33 +280,6 @@ export function ProfileContent() {
       value: 12,
       icon: Award,
       color: "text-chart-5",
-    },
-  ]
-
-  const recentActivity = [
-    {
-      subject: "Mathematics",
-      test: "Algebra Practice Test #5",
-      score: 85,
-      date: "2 hours ago",
-    },
-    {
-      subject: "Romanian",
-      test: "Literature Analysis",
-      score: 72,
-      date: "Yesterday",
-    },
-    {
-      subject: "History",
-      test: "World War II Quiz",
-      score: 90,
-      date: "2 days ago",
-    },
-    {
-      subject: "English",
-      test: "Grammar Fundamentals",
-      score: 88,
-      date: "3 days ago",
     },
   ]
 
@@ -562,35 +602,54 @@ export function ProfileContent() {
         <TabsContent value="activity" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
+              <CardTitle>Taken Sessions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <BookOpen className="w-5 h-5 text-primary" />
+              {isLoadingSessions ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No sessions found.</p>
+              ) : (
+                <div className="space-y-3">
+                  {sessions.map((session, index) => {
+                    return (
+                      <div
+                        key={`${session.sessionId}-${session.testTakenTime}-${index}`}
+                        className="w-full text-left p-4 rounded-lg border bg-muted/30 border-border hover:bg-muted/60 transition-colors"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <div className="space-y-1">
+                            <p className="font-medium text-foreground">
+                              Session #{session.sessionId} • Test #{session.testId}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Taken: {toReadableDateTime(session.testTakenTime)}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <div className="text-right min-w-[80px]">
+                              <p className="font-semibold text-foreground">{session.resultLabel}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {session.scorePercentage}%
+                              </p>
+                            </div>
+                            <Progress value={session.scorePercentage} className="w-24 h-2" />
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/profile/activity/${session.sessionId}`}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                View Details
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {activity.test}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {activity.subject} - {activity.date}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-foreground">{activity.score}%</p>
-                      <Progress value={activity.score} className="w-20 h-2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    )
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
