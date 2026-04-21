@@ -3,6 +3,8 @@ import type {
   GenerateTestRequest,
   RegisterTestSessionRequest,
   RegisterTestSessionResponse,
+  SessionActivityDetail,
+  SessionActivitySummary,
   VerifyTestResponse,
 } from '@/lib/types/test';
 
@@ -128,6 +130,40 @@ export const testApi = {
     });
 
     return handleResponse<VerifyTestResponse>(response);
+  },
+
+  async getActivitySessions(): Promise<SessionActivitySummary[]> {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new ApiException('No authentication token found', 401);
+    }
+
+    const response = await fetch('/api/test-session/activity/sessions', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse<SessionActivitySummary[]>(response);
+  },
+
+  async getActivitySessionById(sessionId: number): Promise<SessionActivityDetail> {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new ApiException('No authentication token found', 401);
+    }
+
+    const response = await fetch(`/api/test-session/activity/sessions/${sessionId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse<SessionActivityDetail>(response);
   },
 };
 
