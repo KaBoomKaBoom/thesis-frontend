@@ -17,9 +17,6 @@ import {
   Save,
   X,
   Award,
-  BookOpen,
-  Target,
-  TrendingUp,
   Loader2,
   Eye,
 } from "lucide-react"
@@ -258,33 +255,6 @@ export function ProfileContent() {
     setIsEditing(false)
   }
 
-  const stats = [
-    {
-      label: String(t("profile.testsCompleted")),
-      value: 47,
-      icon: BookOpen,
-      color: "text-primary",
-    },
-    {
-      label: String(t("profile.averageScore")),
-      value: "78%",
-      icon: Target,
-      color: "text-accent",
-    },
-    {
-      label: String(t("profile.studyHours")),
-      value: 124,
-      icon: TrendingUp,
-      color: "text-chart-3",
-    },
-    {
-      label: String(t("profile.achievements")),
-      value: 12,
-      icon: Award,
-      color: "text-chart-5",
-    },
-  ]
-
   const achievements = [
     { name: String(t("profile.firstTest")), description: String(t("profile.firstTestDesc")), earned: true },
     { name: String(t("profile.weekStreak")), description: String(t("profile.weekStreakDesc")), earned: true },
@@ -402,27 +372,6 @@ export function ProfileContent() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat) => (
-              <Card key={stat.label}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className={`${stat.color}`}>
-                      <stat.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {stat.value}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
           {/* Profile Details */}
           <Card>
