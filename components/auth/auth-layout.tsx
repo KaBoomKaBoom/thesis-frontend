@@ -5,6 +5,7 @@ import React from "react"
 import { BookOpen, GraduationCap, Target, TrendingUp } from "lucide-react"
 import { useI18n } from "@/components/i18n/i18n-provider"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -72,7 +73,8 @@ export function AuthLayout({ children, titleKey, subtitleKey }: AuthLayoutProps)
       {/* Right side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-1">
+            <ThemeToggle />
             <LanguageSwitcher />
           </div>
 

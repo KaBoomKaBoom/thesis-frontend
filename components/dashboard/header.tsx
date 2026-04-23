@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 import { useI18n } from "@/components/i18n/i18n-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface HeaderProps {
   user?: {
@@ -85,6 +86,7 @@ export function DashboardHeader({ user }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+          <ThemeToggle />
 
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">

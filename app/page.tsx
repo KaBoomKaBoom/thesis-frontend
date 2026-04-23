@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/components/i18n/i18n-provider"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function HomePage() {
   const { t } = useI18n()
@@ -45,6 +46,7 @@ export default function HomePage() {
             <span className="text-xl font-bold text-foreground">ExamPrep</span>
           </Link>
           <nav className="flex items-center gap-2">
+            <ThemeToggle />
             <LanguageSwitcher />
             <Link href="/login">
               <Button variant="ghost">{String(t("home.signIn"))}</Button>
