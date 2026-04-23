@@ -5,10 +5,16 @@ import { Loader2, RefreshCw, CheckCircle2, XCircle, MinusCircle } from "lucide-r
 import { DashboardHeader } from "@/components/dashboard/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { testApi, ApiException } from "@/lib/api/test"
 import type {
   AvailableTest,
@@ -81,6 +87,9 @@ function getAnswerOptions(question: TestQuestionSlot): AnswerOption[] {
 export function TestContent() {
   const { toast } = useToast()
   const { t } = useI18n()
+
+  const typeOptions = ["math", "romanian", "history", "english", "physics", "chemistry", "biology", "informatics"]
+  const languageOptions = ["ro", "en", "ru"]
 
   const [type, setType] = useState("math")
   const [language, setLanguage] = useState("ro")
@@ -284,23 +293,35 @@ export function TestContent() {
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="testType">{String(t("tests.type"))}</Label>
-                  <Input
-                    id="testType"
-                    value={type}
-                    onChange={(event) => setType(event.target.value)}
-                    placeholder="math"
-                  />
+                  <Label>{String(t("tests.type"))}</Label>
+                  <Select value={type} onValueChange={setType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typeOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="testLanguage">{String(t("tests.language"))}</Label>
-                  <Input
-                    id="testLanguage"
-                    value={language}
-                    onChange={(event) => setLanguage(event.target.value)}
-                    placeholder="ro"
-                  />
+                  <Label>{String(t("tests.language"))}</Label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languageOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option.toUpperCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex items-end gap-2">
