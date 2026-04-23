@@ -1,10 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   GraduationCap,
-  Bell,
   User,
   Settings,
   LogOut,
@@ -26,6 +26,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 import { useI18n } from "@/components/i18n/i18n-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { userApi } from "@/lib/api/user"
 
 interface HeaderProps {
   user?: {
@@ -39,14 +40,55 @@ interface HeaderProps {
 export function DashboardHeader({ user }: HeaderProps) {
   const router = useRouter()
   const { t } = useI18n()
-  
-  const defaultUser = user || {
-    firstName: "Ion",
-    lastName: "Popescu",
-    email: "ion.popescu@email.com",
-  }
 
-  const initials = `${defaultUser.firstName[0]}${defaultUser.lastName[0]}`
+  const [headerUser, setHeaderUser] = useState<HeaderProps["user"]>(
+    user || {
+      firstName: "",
+      lastName: "",
+      email: "",
+    },
+  )
+
+  useEffect(() => {
+    if (user) {
+      setHeaderUser(user)
+      return
+    }
+
+    let isMounted = true
+
+    const loadUser = async () => {
+      try {
+        const profile = await userApi.getProfile()
+
+        if (!isMounted) return
+
+        setHeaderUser({
+          firstName: profile.firstName || "",
+          lastName: profile.lastName || "",
+          email: profile.email || "",
+        })
+      } catch {
+        if (!isMounted) return
+
+        setHeaderUser({
+          firstName: "",
+          lastName: "",
+          email: "",
+        })
+      }
+    }
+
+    loadUser()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user])
+
+  const initials = headerUser?.firstName && headerUser.lastName
+    ? `${headerUser.firstName[0]}${headerUser.lastName[0]}`
+    : "?"
 
   const handleLogout = () => {
     router.push("/login")
@@ -88,26 +130,18 @@ export function DashboardHeader({ user }: HeaderProps) {
           <LanguageSwitcher />
           <ThemeToggle />
 
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-              3
-            </span>
-          </Button>
-
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 px-2">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={defaultUser.avatar || "/placeholder.svg"} />
+                  <AvatarImage src={headerUser?.avatar || "/placeholder.svg"} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden sm:inline text-sm font-medium">
-                  {defaultUser.firstName}
+                  {headerUser?.lastName || "-"}
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -115,10 +149,10 @@ export function DashboardHeader({ user }: HeaderProps) {
               <DropdownMenuLabel>
                 <div className="flex flex-col">
                   <span>
-                    {defaultUser.firstName} {defaultUser.lastName}
+                    {headerUser?.firstName || "-"} {headerUser?.lastName || ""}
                   </span>
                   <span className="text-xs text-muted-foreground font-normal">
-                    {defaultUser.email}
+                    {headerUser?.email || "-"}
                   </span>
                 </div>
               </DropdownMenuLabel>
