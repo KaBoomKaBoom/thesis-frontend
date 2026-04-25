@@ -10,7 +10,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar,
   GraduationCap,
   Edit2,
   Camera,
@@ -48,7 +47,6 @@ interface UserProfile {
   email: string
   phone: string
   location: string
-  dateOfBirth: string
   role: string
   gradeLevel: string
   school: string
@@ -71,7 +69,6 @@ export function ProfileContent() {
     email: "",
     phone: "",
     location: "",
-    dateOfBirth: "",
     role: "",
     gradeLevel: "",
     school: "",
@@ -82,7 +79,6 @@ export function ProfileContent() {
 
   useEffect(() => {
     fetchProfile()
-    fetchActivitySessions()
   }, [])
 
   const toReadableDateTime = (value: string) => {
@@ -127,7 +123,6 @@ export function ProfileContent() {
         email: data.email,
         phone: data.phone || "",
         location: data.location || "",
-        dateOfBirth: data.dateOfBirth || "",
         role: data.role,
         gradeLevel: data.gradeLevel || "",
         school: data.school || "",
@@ -136,6 +131,13 @@ export function ProfileContent() {
       
       setProfile(userProfile)
       setEditedProfile(userProfile)
+
+      if (userProfile.role.toLowerCase() !== "teacher") {
+        fetchActivitySessions()
+      } else {
+        setSessions([])
+        setIsLoadingSessions(false)
+      }
     } catch (error) {
       if (error instanceof ApiException) {
         if (error.status === 401) {
@@ -216,7 +218,6 @@ export function ProfileContent() {
         email: response.profile.email,
         phone: response.profile.phone || "",
         location: response.profile.location || "",
-        dateOfBirth: response.profile.dateOfBirth || "",
         role: response.profile.role,
         gradeLevel: response.profile.gradeLevel || "",
         school: response.profile.school || "",
@@ -266,6 +267,8 @@ export function ProfileContent() {
     ? `${profile.firstName[0]}${profile.lastName[0]}`
     : "?"
 
+  const isTeacher = profile.role.toLowerCase() === "teacher"
+
   if (isLoading) {
     return (
       <div className="container max-w-6xl py-8 px-4">
@@ -282,9 +285,9 @@ export function ProfileContent() {
   return (
     <div className="container max-w-6xl py-8 px-4">
       <Tabs defaultValue="profile" className="space-y-8">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className={`grid w-full max-w-md ${isTeacher ? "grid-cols-2" : "grid-cols-3"}`}>
           <TabsTrigger value="profile">{String(t("profile.tabProfile"))}</TabsTrigger>
-          <TabsTrigger value="activity">{String(t("profile.tabActivity"))}</TabsTrigger>
+          {!isTeacher ? <TabsTrigger value="activity">{String(t("profile.tabActivity"))}</TabsTrigger> : null}
           <TabsTrigger value="achievements">{String(t("profile.tabAchievements"))}</TabsTrigger>
         </TabsList>
 
@@ -448,20 +451,6 @@ export function ProfileContent() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">{String(t("profile.dateOfBirth"))}</Label>
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={editedProfile.dateOfBirth}
-                      onChange={(e) =>
-                        setEditedProfile({
-                          ...editedProfile,
-                          dateOfBirth: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label>{String(t("auth.gradeLevel"))}</Label>
                     <Select
                       value={editedProfile.gradeLevel}
@@ -528,18 +517,6 @@ export function ProfileContent() {
                     value={profile.location}
                   />
                   <ProfileField
-                    icon={<Calendar className="w-4 h-4" />}
-                    label={String(t("profile.dateOfBirth"))}
-                    value={new Date(profile.dateOfBirth).toLocaleDateString(
-                      "en-US",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }
-                    )}
-                  />
-                  <ProfileField
                     icon={<GraduationCap className="w-4 h-4" />}
                     label={String(t("auth.school"))}
                     value={profile.school}
@@ -550,60 +527,62 @@ export function ProfileContent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="activity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{String(t("profile.takenSessions"))}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingSessions ? (
-                <div className="flex items-center justify-center py-10">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                </div>
-              ) : sessions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{String(t("profile.noSessions"))}</p>
-              ) : (
-                <div className="space-y-3">
-                  {sessions.map((session, index) => {
-                    return (
-                      <div
-                        key={`${session.sessionId}-${session.testTakenTime}-${index}`}
-                        className="w-full text-left p-4 rounded-lg border bg-muted/30 border-border hover:bg-muted/60 transition-colors"
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                          <div className="space-y-1">
-                            <p className="font-medium text-foreground">
-                              Session #{session.sessionId} • Test #{session.testId}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {String(t("profile.taken"))} {toReadableDateTime(session.testTakenTime)}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className="text-right min-w-[80px]">
-                              <p className="font-semibold text-foreground">{session.resultLabel}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {session.scorePercentage}%
+        {!isTeacher ? (
+          <TabsContent value="activity" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{String(t("profile.takenSessions"))}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoadingSessions ? (
+                  <div className="flex items-center justify-center py-10">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : sessions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{String(t("profile.noSessions"))}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {sessions.map((session, index) => {
+                      return (
+                        <div
+                          key={`${session.sessionId}-${session.testTakenTime}-${index}`}
+                          className="w-full text-left p-4 rounded-lg border bg-muted/30 border-border hover:bg-muted/60 transition-colors"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="space-y-1">
+                              <p className="font-medium text-foreground">
+                                Session #{session.sessionId} • Test #{session.testId}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {String(t("profile.taken"))} {toReadableDateTime(session.testTakenTime)}
                               </p>
                             </div>
-                            <Progress value={session.scorePercentage} className="w-24 h-2" />
-                            <Button asChild variant="outline" size="sm">
-                              <Link href={`/profile/activity/${session.sessionId}`}>
-                                <Eye className="w-4 h-4 mr-1" />
-                                {String(t("profile.viewDetails"))}
-                              </Link>
-                            </Button>
+
+                            <div className="flex items-center gap-4">
+                              <div className="text-right min-w-[80px]">
+                                <p className="font-semibold text-foreground">{session.resultLabel}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {session.scorePercentage}%
+                                </p>
+                              </div>
+                              <Progress value={session.scorePercentage} className="w-24 h-2" />
+                              <Button asChild variant="outline" size="sm">
+                                <Link href={`/profile/activity/${session.sessionId}`}>
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  {String(t("profile.viewDetails"))}
+                                </Link>
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ) : null}
 
         <TabsContent value="achievements" className="space-y-6">
           <Card>

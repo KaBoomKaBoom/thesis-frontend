@@ -1,5 +1,7 @@
 // User Profile DTO matching backend
 export interface UserProfileDTO {
+  id?: number;
+  userId?: number;
   firstName: string;
   lastName: string;
   email: string;

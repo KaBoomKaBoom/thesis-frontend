@@ -7,6 +7,7 @@ export interface TestQuestionSlot {
 
 export interface AvailableTest {
   test_id: number;
+  name?: string;
   type: string;
   language: string;
   questions: TestQuestionSlot[];
