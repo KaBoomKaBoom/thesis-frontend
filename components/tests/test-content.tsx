@@ -368,7 +368,7 @@ export function TestContent() {
                       >
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Test #{test.test_id}</Badge>
+                            <Badge variant="secondary">{test.name || `Test #${test.test_id}`}</Badge>
                             <Badge variant="outline">{test.type}</Badge>
                             <Badge variant="outline">{test.language}</Badge>
                           </div>
@@ -401,7 +401,7 @@ export function TestContent() {
             <Card>
               <CardHeader className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle>Test #{activeTest.test_id}</CardTitle>
+                  <CardTitle>{activeTest.name || `Test #${activeTest.test_id}`}</CardTitle>
                   <Badge variant="outline">
                     {String(t("tests.question"))} {currentQuestionIndex + 1} / {sortedQuestions.length}
                   </Badge>

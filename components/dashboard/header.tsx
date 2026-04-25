@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import {
   GraduationCap,
   User,
+  Users,
   Settings,
   LogOut,
   BookOpen,
@@ -34,6 +35,7 @@ interface HeaderProps {
     lastName: string
     email: string
     avatar?: string
+    role?: string
   }
 }
 
@@ -46,6 +48,7 @@ export function DashboardHeader({ user }: HeaderProps) {
       firstName: "",
       lastName: "",
       email: "",
+      role: "",
     },
   )
 
@@ -67,6 +70,7 @@ export function DashboardHeader({ user }: HeaderProps) {
           firstName: profile.firstName || "",
           lastName: profile.lastName || "",
           email: profile.email || "",
+          role: profile.role || "",
         })
       } catch {
         if (!isMounted) return
@@ -75,6 +79,7 @@ export function DashboardHeader({ user }: HeaderProps) {
           firstName: "",
           lastName: "",
           email: "",
+          role: "",
         })
       }
     }
@@ -90,13 +95,20 @@ export function DashboardHeader({ user }: HeaderProps) {
     ? `${headerUser.firstName[0]}${headerUser.lastName[0]}`
     : "?"
 
+  const isTeacher = headerUser?.role?.toLowerCase() === "teacher"
+
   const handleLogout = () => {
     router.push("/login")
   }
 
   const navLinks = [
     { href: "/dashboard", label: String(t("header.dashboard")), icon: BarChart3 },
-    { href: "/tests", label: String(t("header.takeTest")), icon: BookOpen },
+    ...(isTeacher
+      ? [{ href: "/teacher/students", label: String(t("header.teacherWorkspace")), icon: Users }]
+      : []),
+    ...(!isTeacher
+      ? [{ href: "/tests", label: String(t("header.takeTest")), icon: BookOpen }]
+      : []),
     { href: "/profile", label: String(t("header.profile")), icon: User },
   ]
 

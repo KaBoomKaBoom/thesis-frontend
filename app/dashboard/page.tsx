@@ -1,5 +1,5 @@
-import { DashboardContent } from "@/components/dashboard/dashboard-content"
+import { DashboardSwitcherContent } from "@/components/dashboard/dashboard-switcher-content"
 
 export default function DashboardPage() {
-  return <DashboardContent />
+  return <DashboardSwitcherContent />
 }
