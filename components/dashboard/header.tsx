@@ -12,6 +12,7 @@ import {
   BookOpen,
   BarChart3,
   Menu,
+  Shield,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -96,6 +97,7 @@ export function DashboardHeader({ user }: HeaderProps) {
     : "?"
 
   const isTeacher = headerUser?.role?.toLowerCase() === "teacher"
+  const isAdmin = headerUser?.role?.toLowerCase() === "admin"
 
   const handleLogout = () => {
     router.push("/login")
@@ -103,6 +105,9 @@ export function DashboardHeader({ user }: HeaderProps) {
 
   const navLinks = [
     { href: "/dashboard", label: String(t("header.dashboard")), icon: BarChart3 },
+    ...(isAdmin
+      ? [{ href: "/admin", label: String(t("header.adminPanel")), icon: Shield }]
+      : []),
     ...(isTeacher
       ? [{ href: "/teacher/students", label: String(t("header.teacherWorkspace")), icon: Users }]
       : []),
