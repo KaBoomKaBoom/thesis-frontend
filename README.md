@@ -42,11 +42,11 @@ Frontend for an educational exam-prep platform (BAC + 9th grade) built with Next
 
 A short demo video showcasing the app is included in this repository.
 
-[![Demo](Demo-poster.svg)](Demo.mp4)
-
-View directly: [Demo.mp4](Demo.mp4)
+  [![Demo Thumbnail](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/73oOfc2HZP0)
 
 ---
+
+
 
 ## Run locally
 
