@@ -42,10 +42,7 @@ Frontend for an educational exam-prep platform (BAC + 9th grade) built with Next
 
 A short demo video showcasing the app is included in this repository.
 
-<video controls width="720">
-  <source src="Demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Demo](Demo-poster.svg)](Demo.mp4)
 
 View directly: [Demo.mp4](Demo.mp4)
 
